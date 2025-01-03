@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import '/styles/pages/HomePage.css'; // Include your CSS for styling
+import '../styles/pages/HomePage.css'; // Include your CSS for styling
 
 const HomePage = () => {
   const navigate = useNavigate();

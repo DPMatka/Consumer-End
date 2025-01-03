@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
-import '/styles/pages/Login.css'; // Ensure the correct relative path
+import '../styles/pages/Login.css'; // Ensure the correct relative path
 
 const Login = () => {
   const [email, setEmail] = useState('');
