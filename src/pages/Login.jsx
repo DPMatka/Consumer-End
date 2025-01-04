@@ -14,7 +14,7 @@ const Login = () => {
     e.preventDefault();
     setIsLoading(true); // Start loading spinner
     try {
-      const { data } = await axios.post('http://localhost:5000/api/auth/login', { email, password });
+      const { data } = await axios.post('https://only-backend-je4j.onrender.com/api/auth/login', { email, password });
 
       // Save token and wallet balance to localStorage
       localStorage.setItem('token', data.token);
