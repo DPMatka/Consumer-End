@@ -20,7 +20,7 @@ const Header = () => {
       if (token) {
         setIsLoggedIn(true);
         try {
-          const { data } = await axios.get('http://localhost:5000/api/wallet/balance', {
+          const { data } = await axios.get('https://only-backend-je4j.onrender.com/api/wallet/balance', {
             headers: { Authorization: token },
           });
           setWalletBalance(data.walletBalance);
