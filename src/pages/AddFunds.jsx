@@ -27,11 +27,11 @@ const AddFunds = () => {
       // API call to submit fund request
       const token = localStorage.getItem('token'); // Retrieve token from localStorage
       const response = await axios.post(
-        'http://localhost:5000/api/wallet/add-funds',
+        'https://only-backend-je4j.onrender.com/api/wallet/add-funds',
         formData,
         {
           headers: {
-            'Content-Type': 'multipart/form-data',
+            'Content-Type': 'application/json',
             Authorization: `Bearer ${token}`, // Pass token for authentication
           },
         }
