@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const AddFunds = () => {
+  const navigate = useNavigate(); // For back navigation
   const [transactionId, setTransactionId] = useState('');
   const [receipt, setReceipt] = useState(null);
   const [amount, setAmount] = useState('');
@@ -11,28 +13,31 @@ const AddFunds = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!transactionId || !amount) {
+    const trimmedTransactionId = transactionId.trim();
+    const parsedAmount = parseFloat(amount);
+
+    if (!trimmedTransactionId || isNaN(parsedAmount) || parsedAmount <= 0) {
       setError('Amount and Transaction ID are required.');
       return;
     }
 
     const formData = new FormData();
-    formData.append('transactionId', transactionId);
-    formData.append('amount', amount);
+    formData.append('transactionId', trimmedTransactionId);
+    formData.append('amount', parsedAmount);
     if (receipt) {
       formData.append('receiptUrl', receipt);
     }
 
     try {
       // API call to submit fund request
-      const token = localStorage.getItem('token'); // Retrieve token from localStorage
+      const token = localStorage.getItem('token');
       const response = await axios.post(
         'https://only-backend-je4j.onrender.com/api/wallet/add-funds',
         formData,
         {
           headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`, // Pass token for authentication
+            'Content-Type': 'multipart/form-data',
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -54,45 +59,97 @@ const AddFunds = () => {
   };
 
   return (
-    <div className="add-funds-container">
-      <h2 className="add-funds-title">Add Funds</h2>
-
-      <form className="add-funds-form" onSubmit={handleSubmit}>
-        <label htmlFor="amount">Enter Amount:</label>
-        <input
-          type="number"
-          id="amount"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          placeholder="Enter amount in INR"
-          required
-        />
-
-        <label htmlFor="transactionId">Transaction ID:</label>
-        <input
-          type="text"
-          id="transactionId"
-          value={transactionId}
-          onChange={(e) => setTransactionId(e.target.value)}
-          placeholder="Enter transaction ID"
-          required
-        />
-
-        <label htmlFor="receipt">Upload Receipt (optional):</label>
-        <input
-          type="file"
-          id="receipt"
-          accept="image/*"
-          onChange={handleReceiptChange}
-        />
-
-        <button type="submit" className="submit-button">
-          Submit
+    <div className="bg-gray-900 text-white min-h-screen p-5 flex flex-col items-center">
+      {/* Back Arrow and Title */}
+      <div className="flex items-center w-full max-w-md mb-5">
+        <button
+          onClick={() => navigate(-1)}
+          className="bg-transparent text-white p-2 rounded-full hover:bg-gray-700 transition duration-300"
+          aria-label="Go Back"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth="2"
+            stroke="currentColor"
+            className="w-6 h-6"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M15.75 19.5L8.25 12l7.5-7.5"
+            />
+          </svg>
         </button>
-      </form>
+        <h2 className="text-xl font-bold ml-4">Add Coins</h2>
+      </div>
 
-      {message && <p className="success-message">{message}</p>}
-      {error && <p className="error-message">{error}</p>}
+      <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Amount Input */}
+          <div>
+            <label htmlFor="amount" className="block text-sm font-medium mb-1">
+              Enter Number of Coins:
+            </label>
+            <input
+              type="number"
+              id="amount"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              placeholder="Enter number of coins."
+              className="w-full px-3 py-2 rounded-lg bg-gray-700 text-white focus:ring-2 focus:ring-purple-600"
+              required
+            />
+          </div>
+
+          {/* Transaction ID Input */}
+          <div>
+            <label htmlFor="transactionId" className="block text-sm font-medium mb-1">
+              Settlement ID (UTR Number):
+            </label>
+            <input
+              type="text"
+              id="transactionId"
+              value={transactionId}
+              onChange={(e) => setTransactionId(e.target.value)}
+              placeholder="Enter transaction ID"
+              className="w-full px-3 py-2 rounded-lg bg-gray-700 text-white focus:ring-2 focus:ring-purple-600"
+              required
+            />
+          </div>
+
+          {/* Receipt Upload */}
+          <div>
+            <label htmlFor="receipt" className="block text-sm font-medium mb-1">
+              Upload Receipt (optional):
+            </label>
+            <input
+              type="file"
+              id="receipt"
+              accept="image/*"
+              onChange={handleReceiptChange}
+              className="w-full bg-gray-700 text-white py-2 rounded-lg"
+            />
+          </div>
+
+          {/* Submit Button */}
+          <button
+            type="submit"
+            className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-lg font-semibold transition duration-300"
+          >
+            Submit
+          </button>
+        </form>
+
+        {/* Success and Error Messages */}
+        {message && (
+          <p className="text-green-500 text-center mt-4 font-semibold">{message}</p>
+        )}
+        {error && (
+          <p className="text-red-500 text-center mt-4 font-semibold">{error}</p>
+        )}
+      </div>
     </div>
   );
 };

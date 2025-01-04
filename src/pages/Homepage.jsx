@@ -45,7 +45,7 @@ const HomePage = () => {
           className="text-lg font-semibold py-3 px-6 bg-gradient-to-r from-yellow-500 to-yellow-700 text-white rounded-lg shadow-xl hover:from-yellow-600 hover:to-yellow-800 transition-colors duration-300"
           onClick={() => navigate('/add-funds')}
         >
-          + Add Funds
+          + Add Points
         </button>
       </div>
 

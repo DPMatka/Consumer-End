@@ -55,7 +55,7 @@ const Header = () => {
         {isLoggedIn ? (
           <div className="flex items-center bg-purple-700 text-white px-6 py-2 rounded-lg shadow text-sm font-bold">
             <span className="material-icons-outlined mr-2">account_balance_wallet</span>
-            Wallet: ₹{walletBalance}
+            Points: {walletBalance}
           </div>
         ) : (
           <button

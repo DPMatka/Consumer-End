@@ -10,22 +10,32 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
   };
 
   const menuItems = [
-    { icon: 'home', label: 'Home', path: '/' }, // Home menu item added
+    { icon: 'home', label: 'Home', path: '/' },
     { icon: 'person_outline', label: 'Profile', path: '/profile' },
-    { icon: 'receipt_long', label: 'Transactions', path: '/transactions' },
+    { icon: 'receipt_long', label: 'Coin Settlements', path: '/transactions' },
     { icon: 'settings', label: 'Settings', path: '/settings' },
     { icon: 'help_outline', label: 'Help', path: '/help' },
     { icon: 'contact_phone', label: 'Contact Support', path: '/contact' },
     { icon: 'campaign', label: 'Promotions', path: '/promotions' },
     { icon: 'question_answer', label: 'FAQs', path: '/faq' },
-    { icon: 'logout', label: 'Log Out', action: handleLogout }
   ];
 
   return (
     <>
-      <div className={`fixed inset-0 bg-black bg-opacity-50 ${isSidebarOpen ? 'block' : 'hidden'}`} onClick={toggleSidebar}></div>
-      <aside className={`fixed top-0 left-0 h-full w-72 bg-gray-800 text-white transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-300 ease-in-out z-40`}>
+      {/* Overlay */}
+      <div
+        className={`fixed inset-0 bg-black bg-opacity-50 z-30 ${isSidebarOpen ? 'block' : 'hidden'}`}
+        onClick={toggleSidebar}
+      ></div>
+
+      {/* Sidebar */}
+      <aside
+        className={`fixed top-0 left-0 h-full w-72 bg-gray-800 text-white transform ${
+          isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        } transition-transform duration-300 ease-in-out z-40`}
+      >
         <div className="flex flex-col justify-between h-full">
+          {/* Sidebar Header */}
           <div className="p-5">
             <div className="flex items-center space-x-4 mb-6">
               <img
@@ -38,18 +48,30 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
                 <p className="text-sm text-gray-400">259 Coins</p>
               </div>
             </div>
+
+            {/* Menu Items */}
             <ul>
               {menuItems.map((item, index) => (
-                <li key={index} className={`flex items-center p-3 hover:bg-purple-500 transition-colors cursor-pointer ${item.path === window.location.pathname ? 'bg-purple-700' : ''}`} onClick={() => {
-                  item.path ? navigate(item.path) : item.action();
-                  toggleSidebar();
-                }}>
+                <li
+                  key={index}
+                  className={`flex items-center p-3 rounded-lg hover:bg-purple-500 transition-colors cursor-pointer ${
+                    item.path === window.location.pathname ? 'bg-purple-700' : ''
+                  }`}
+                  onClick={() => {
+                    if (item.path) {
+                      navigate(item.path);
+                    }
+                    toggleSidebar();
+                  }}
+                >
                   <span className="material-icons-outlined text-lg mr-3">{item.icon}</span>
                   {item.label}
                 </li>
               ))}
             </ul>
           </div>
+
+          {/* Logout Button */}
           <div className="p-3 text-center">
             <button
               className="w-full flex items-center justify-center p-3 bg-red-600 hover:bg-red-700 transition-colors text-white font-medium rounded-lg"
