@@ -11,7 +11,7 @@ const HomePage = () => {
   useEffect(() => {
     const fetchAllMarkets = async () => {
       try {
-        const { data } = await axios.get('http://localhost:5000/api/markets');
+        const { data } = await axios.get('https://only-backend-je4j.onrender.com/api/markets');
         setAllMarkets(data); // Set all markets
       } catch (error) {
         console.error('Error fetching all markets:', error);
