@@ -16,10 +16,14 @@ import Header from './components/Header'; // New Header component
 function App() {
   return (
     <Router>
-      <Header /> {/* Global Header */}
       <Routes>
         {/* Public Routes */}
-        <Route path="/" element={<HomePage />} />
+        <Route path="/" element={
+          <>
+          <Header />
+          <HomePage />
+          </>
+      } />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
@@ -28,6 +32,7 @@ function App() {
           <Route path="/add-funds" element={<AddFunds />} />
           <Route path="/play/:marketName" element={<MarketPlay />} />
           <Route path="/single-digit" element={<SingleDigit />} />
+          <Route path="/single-digit/:marketName" element={<SingleDigit />} />
           <Route path="/jodi-digit" element={<JodiDigit />} />
           <Route path="/single-pana" element={<SinglePana />} />
           <Route path="/double-pana" element={<DoublePana />} />

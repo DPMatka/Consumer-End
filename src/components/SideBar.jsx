@@ -1,4 +1,3 @@
-// Sidebar.jsx
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -10,57 +9,54 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
     navigate('/login');
   };
 
+  const menuItems = [
+    { icon: 'home', label: 'Home', path: '/' }, // Home menu item added
+    { icon: 'person_outline', label: 'Profile', path: '/profile' },
+    { icon: 'receipt_long', label: 'Transactions', path: '/transactions' },
+    { icon: 'settings', label: 'Settings', path: '/settings' },
+    { icon: 'help_outline', label: 'Help', path: '/help' },
+    { icon: 'contact_phone', label: 'Contact Support', path: '/contact' },
+    { icon: 'campaign', label: 'Promotions', path: '/promotions' },
+    { icon: 'question_answer', label: 'FAQs', path: '/faq' },
+    { icon: 'logout', label: 'Log Out', action: handleLogout }
+  ];
+
   return (
     <>
-      <div className={`overlay ${isSidebarOpen ? 'visible' : ''}`} onClick={toggleSidebar}></div>
-
-      <aside className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
-        <div className="menu-card">
-          <div className="profile-section">
-            <img
-              src="https://res.cloudinary.com/dwroh4zkk/image/upload/v1735050663/profile_cidlht.png"
-              alt="Profile"
-              className="profile-picture"
-            />
-            <h3 className="profile-name">Bhavya Kothari</h3>
+      <div className={`fixed inset-0 bg-black bg-opacity-50 ${isSidebarOpen ? 'block' : 'hidden'}`} onClick={toggleSidebar}></div>
+      <aside className={`fixed top-0 left-0 h-full w-72 bg-gray-800 text-white transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-300 ease-in-out z-40`}>
+        <div className="flex flex-col justify-between h-full">
+          <div className="p-5">
+            <div className="flex items-center space-x-4 mb-6">
+              <img
+                src="https://res.cloudinary.com/dwroh4zkk/image/upload/v1735050663/profile_cidlht.png"
+                alt="Profile"
+                className="w-12 h-12 rounded-full"
+              />
+              <div>
+                <h3 className="text-lg font-semibold">Bhavya Kothari</h3>
+                <p className="text-sm text-gray-400">259 Coins</p>
+              </div>
+            </div>
+            <ul>
+              {menuItems.map((item, index) => (
+                <li key={index} className={`flex items-center p-3 hover:bg-purple-500 transition-colors cursor-pointer ${item.path === window.location.pathname ? 'bg-purple-700' : ''}`} onClick={() => {
+                  item.path ? navigate(item.path) : item.action();
+                  toggleSidebar();
+                }}>
+                  <span className="material-icons-outlined text-lg mr-3">{item.icon}</span>
+                  {item.label}
+                </li>
+              ))}
+            </ul>
           </div>
-          <div className="menu-balance">
-            <h2>259</h2>
-            <p>Total Coins</p>
-            <button className="refresh-button" onClick={() => alert('Refresh Balance')}>⟳</button>
-          </div>
-          <div className="menu-actions">
-            <button className="menu-action" onClick={() => navigate('/profile')}>
-              <span className="action-icon">👤</span>
-              <span>Profile</span>
-            </button>
-            <button className="menu-action" onClick={() => navigate('/transactions')}>
-              <span className="action-icon">📜</span>
-              <span>Transactions</span>
-            </button>
-            <button className="menu-action" onClick={() => navigate('/settings')}>
-              <span className="action-icon">⚙️</span>
-              <span>Settings</span>
-            </button>
-            <button className="menu-action" onClick={() => navigate('/help')}>
-              <span className="action-icon">❓</span>
-              <span>Help</span>
-            </button>
-            <button className="menu-action" onClick={() => navigate('/contact')}>
-              <span className="action-icon">📞</span>
-              <span>Contact Support</span>
-            </button>
-            <button className="menu-action" onClick={() => navigate('/promotions')}>
-              <span className="action-icon">🎉</span>
-              <span>Promotions</span>
-            </button>
-            <button className="menu-action" onClick={() => navigate('/faq')}>
-              <span className="action-icon">📘</span>
-              <span>FAQs</span>
-            </button>
-            <button className="menu-action" onClick={handleLogout}>
-              <span className="action-icon">🚪</span>
-              <span>Log Out</span>
+          <div className="p-3 text-center">
+            <button
+              className="w-full flex items-center justify-center p-3 bg-red-600 hover:bg-red-700 transition-colors text-white font-medium rounded-lg"
+              onClick={handleLogout}
+            >
+              <span className="material-icons-outlined mr-2">exit_to_app</span>
+              Log Out
             </button>
           </div>
         </div>

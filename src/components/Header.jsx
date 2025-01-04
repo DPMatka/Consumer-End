@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import './Header.css'; // Ensure proper CSS path
 import Sidebar from '../components/SideBar';
 
 const Header = () => {
@@ -21,7 +20,7 @@ const Header = () => {
         setIsLoggedIn(true);
         try {
           const { data } = await axios.get('https://only-backend-je4j.onrender.com/api/wallet/balance', {
-            headers: { Authorization: token },
+            headers: { Authorization: `Bearer ${token}` },
           });
           setWalletBalance(data.walletBalance);
         } catch (error) {
@@ -35,28 +34,40 @@ const Header = () => {
     fetchWalletBalance();
   }, []);
 
-
   return (
-    <header className="app-header">
-        <div className="menu-icon" onClick={toggleSidebar}>
-          ☰
-        </div>
-        <h1 className="app-logo" onClick={() => navigate('/')}>
-            Matka Pro
+    <header className="flex justify-between items-center p-4 bg-gray-900 text-white shadow-lg">
+      <div className="flex items-center space-x-4">
+        <button 
+          aria-label="Toggle Sidebar"
+          className="material-icons-outlined text-3xl hover:text-purple-300 cursor-pointer" 
+          onClick={toggleSidebar}
+        >
+          menu
+        </button>
+        <h1 
+          className="text-2xl font-bold cursor-pointer" 
+          onClick={() => navigate('/')}
+        >
+          Matka Pro
         </h1>
-        <div className="header-right">
-            {isLoggedIn ? (
-            <>
-                <span className="wallet-balance">💰 Wallet: ₹{walletBalance}</span>
-            </>
-            ) : (
-            <button className="login-button" onClick={() => navigate('/login')}>
-                Login
-            </button>
-            )}
-        </div>
+      </div>
+      <div className="flex items-center space-x-4">
+        {isLoggedIn ? (
+          <div className="flex items-center bg-purple-700 text-white px-6 py-2 rounded-lg shadow text-sm font-bold">
+            <span className="material-icons-outlined mr-2">account_balance_wallet</span>
+            Wallet: ₹{walletBalance}
+          </div>
+        ) : (
+          <button
+            className="px-5 py-2 text-lg bg-purple-600 text-white rounded-lg font-bold cursor-pointer transition-colors duration-300 ease-in-out hover:bg-purple-500"
+            onClick={() => navigate('/login')}
+          >
+            Login
+          </button>
+        )}
+      </div>
 
-        <Sidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
+      <Sidebar isSidebarOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
     </header>
   );
 };
