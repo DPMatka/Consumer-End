@@ -19,9 +19,12 @@ const Header = () => {
       if (token) {
         setIsLoggedIn(true);
         try {
-          const { data } = await axios.get('https://only-backend-je4j.onrender.com/api/wallet/balance', {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+          const { data } = await axios.get(
+            'https://only-backend-je4j.onrender.com/api/wallet/balance',
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
           setWalletBalance(data.walletBalance);
         } catch (error) {
           console.error('Error fetching wallet balance:', error);
@@ -37,15 +40,15 @@ const Header = () => {
   return (
     <header className="flex justify-between items-center p-4 bg-gray-900 text-white shadow-lg">
       <div className="flex items-center space-x-4">
-        <button 
+        <button
           aria-label="Toggle Sidebar"
-          className="material-icons-outlined text-3xl hover:text-purple-300 cursor-pointer" 
+          className="material-icons-outlined text-3xl hover:text-purple-300 cursor-pointer"
           onClick={toggleSidebar}
         >
           menu
         </button>
-        <h1 
-          className="text-2xl font-bold cursor-pointer" 
+        <h1
+          className="text-2xl font-bold cursor-pointer"
           onClick={() => navigate('/')}
         >
           Matka Pro
@@ -53,8 +56,13 @@ const Header = () => {
       </div>
       <div className="flex items-center space-x-4">
         {isLoggedIn ? (
-          <div className="flex items-center bg-purple-700 text-white px-6 py-2 rounded-lg shadow text-sm font-bold">
-            <span className="material-icons-outlined mr-2">account_balance_wallet</span>
+          <div
+            className="flex items-center bg-purple-700 text-white px-6 py-2 rounded-lg shadow text-sm font-bold cursor-pointer hover:bg-purple-600 transition-colors"
+            onClick={() => navigate('/wallet')}
+          >
+            <span className="material-icons-outlined mr-2">
+              account_balance_wallet
+            </span>
             Points: {walletBalance}
           </div>
         ) : (
