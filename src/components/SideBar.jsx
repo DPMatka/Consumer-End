@@ -14,11 +14,8 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
     { icon: 'person_outline', label: 'Profile', path: '/profile' },
     { icon: 'wallet', label: 'Wallet', path: '/wallet' },
     { icon: 'receipt_long', label: 'Coin Settlements', path: '/coin-settlements' },
-    // { icon: 'settings', label: 'Settings', path: '/settings' },
     { icon: 'help_outline', label: 'Help', path: '/help' },
     { icon: 'contact_phone', label: 'Contact Support', path: '/contact' },
-    // { icon: 'campaign', label: 'Promotions', path: '/promotions' },
-    // { icon: 'question_answer', label: 'FAQs', path: '/faq' },
   ];
 
   return (
@@ -46,14 +43,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
               />
               <div>
                 <h3 className="text-lg font-semibold">Bhavya Kothari</h3>
-                <p className="text-sm text-gray-400 flex items-center">
-                  <span
-                    className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-black font-bold px-2 py-1 rounded-md"
-                    title="Coins"
-                  >
-                    💰 259 Coins
-                  </span>
-                </p>
+                {/* <p className="text-sm text-gray-400">Profile</p>  Removed the coins display */}
               </div>
             </div>
 

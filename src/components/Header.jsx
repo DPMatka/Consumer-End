@@ -16,6 +16,7 @@ const Header = () => {
   useEffect(() => {
     const fetchWalletBalance = async () => {
       const token = localStorage.getItem('token');
+      // console.log(token)
       if (token) {
         setIsLoggedIn(true);
         try {

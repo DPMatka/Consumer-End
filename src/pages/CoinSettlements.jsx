@@ -1,10 +1,36 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import coinSettlementsData from "./coinSettlements.json"; // Importing sample JSON
+import axios from 'axios';
 
 const CoinSettlements = () => {
   const navigate = useNavigate();
-  const [transactions] = useState(coinSettlementsData.transactions);
+  const [transactions, setTransactions] = useState([]);
+
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      const token = localStorage.getItem('token'); // Assumes token is stored in localStorage
+      if (!token) {
+        console.error("No token found, please log in again.");
+        return;
+      }
+
+      try {
+        const headers = {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        };
+        const response = await axios.get('https://only-backend-je4j.onrender.com/api/wallet/transactions', { headers });
+        const filteredTransactions = response.data.transactions.filter(
+          tx => tx.status === "approved" || tx.status === "Rejected"
+        );
+        setTransactions(filteredTransactions);
+      } catch (error) {
+        console.error('Error fetching transactions:', error);
+      }
+    };
+
+    fetchTransactions();
+  }, []);
 
   return (
     <div className="bg-gray-900 text-white min-h-screen p-4">
@@ -54,17 +80,15 @@ const CoinSettlements = () => {
                   <td className="p-2">{transaction.amount}</td>
                   <td
                     className={`p-2 font-semibold ${
-                      transaction.status === "Approved"
+                      transaction.status === "approved"
                         ? "text-green-500"
-                        : transaction.status === "Rejected"
-                        ? "text-red-500"
-                        : "text-yellow-500"
+                        : "text-red-500"
                     }`}
                   >
                     {transaction.status}
                   </td>
                   <td className="p-2">
-                    {new Date(transaction.date).toLocaleDateString()}
+                    {new Date(transaction.createdAt).toLocaleDateString()}
                   </td>
                 </tr>
               ))}

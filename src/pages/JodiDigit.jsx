@@ -1,15 +1,50 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import axios from "axios";
 
 const JodiDigit = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [input, setInput] = useState("");
   const [points, setPoints] = useState("");
   const [bets, setBets] = useState([]);
   const [placedBets, setPlacedBets] = useState([]);
-  const [coins, setCoins] = useState(1000);
+  const [coins, setCoins] = useState(0);
   const [error, setError] = useState("");
   const [betType, setBetType] = useState("Open");
+  const marketName = location.state?.marketName || "Milan Day"; // Default market name if not passed
+  const gameName = "Jodi Digit"; // Fixed game name
+
+  useEffect(() => {
+    const fetchWalletBalanceAndBets = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setError("You need to log in to view your balance and bets.");
+        return;
+      }
+
+      const headers = {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      };
+
+      try {
+        const walletResponse = axios.get('https://only-backend-je4j.onrender.com/api/wallet/balance', { headers });
+        const betsResponse = axios.get('https://only-backend-je4j.onrender.com/api/bets/user', { headers });
+
+        const [walletData, betsData] = await Promise.all([walletResponse, betsResponse]);
+        setCoins(walletData.data.walletBalance);
+
+        const filteredBets = betsData.data.bets.filter(bet => bet.marketName === marketName && bet.gameName === gameName);
+        setPlacedBets(filteredBets);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        setError("Failed to fetch data!");
+      }
+    };
+
+    fetchWalletBalanceAndBets();
+  }, []);
 
   const handleAddBet = () => {
     if (!input || !points) {
@@ -48,11 +83,8 @@ const JodiDigit = () => {
     setBets(bets.filter((_, i) => i !== index));
   };
 
-  const handlePlaceBet = () => {
-    const totalPoints = bets.reduce(
-      (sum, bet) => sum + parseInt(bet.points, 10),
-      0
-    );
+  const handlePlaceBet = async () => {
+    const totalPoints = bets.reduce((sum, bet) => sum + parseInt(bet.points, 10), 0);
 
     if (totalPoints === 0) {
       setError("No bets to place!");
@@ -64,16 +96,37 @@ const JodiDigit = () => {
       return;
     }
 
-    const updatedPlacedBets = bets.map((bet) => ({
-      ...bet,
-      isPlaced: true,
-    }));
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setError("You need to log in to place bets.");
+      return;
+    }
 
-    setPlacedBets([...placedBets, ...updatedPlacedBets]);
-    setCoins(coins - totalPoints);
-    setBets([]);
-    setError("");
-    alert("Bet placed successfully!");
+    try {
+      const responses = await Promise.all(bets.map(bet => 
+        axios.post('https://only-backend-je4j.onrender.com/api/bets/place', {
+          marketName: marketName,
+          gameName: gameName,
+          number: bet.input,
+          amount: bet.points,
+          winningRatio: 9
+        }, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+      ));
+
+      setPlacedBets([...placedBets, ...responses.map((resp, index) => ({ ...bets[index], status: resp.data.status }))]);
+      setCoins(coins - totalPoints);
+      setBets([]);
+      setError("");
+      alert("All bets placed successfully!");
+    } catch (error) {
+      console.error('Error placing bets:', error);
+      setError("Failed to place bets!");
+    }
   };
 
   return (
@@ -212,17 +265,15 @@ const JodiDigit = () => {
             </tr>
           </thead>
           <tbody>
-            {placedBets.map((bet) => (
-              <tr key={bet.betId} className="border-b border-gray-700">
-                <td className="px-3 py-1">{bet.input}</td>
-                <td className="px-3 py-1">{bet.points}</td>
+            {placedBets.filter(bet => bet.marketName === marketName && bet.gameName === gameName).map((bet, index) => (
+              <tr key={bet._id || index} className="border-b border-gray-700">
+                <td className="px-3 py-1">{bet.number}</td>
+                <td className="px-3 py-1">{bet.amount}</td>
                 <td className="px-3 py-1">{bet.betType}</td>
                 <td className="px-3 py-1">
-                  {bet.isWin ? (
-                    <span className="text-green-500 font-medium">Win</span>
-                  ) : (
-                    <span className="text-yellow-500 font-medium">Pending</span>
-                  )}
+                  <span className={`font-medium ${bet.status === "win" ? "text-green-500" : "text-yellow-500"}`}>
+                    {bet.status.charAt(0).toUpperCase() + bet.status.slice(1)}
+                  </span>
                 </td>
               </tr>
             ))}

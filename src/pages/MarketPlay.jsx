@@ -6,6 +6,7 @@ import { faHistory, faChartBar, faTrophy } from '@fortawesome/free-solid-svg-ico
 const MarketPlay = () => {
   const { marketName } = useParams(); // Get market name from route
   const navigate = useNavigate();
+  const { gameName } = useParams();
 
   const marketTimes = {
     openTime: '10:00 AM',

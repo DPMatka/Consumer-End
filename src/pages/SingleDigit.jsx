@@ -1,15 +1,70 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import axios from 'axios';
 
 const SingleDigit = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [digit, setDigit] = useState("");
   const [points, setPoints] = useState("");
   const [bets, setBets] = useState([]);
   const [placedBets, setPlacedBets] = useState([]);
-  const [coins, setCoins] = useState(1000);
+  const [coins, setCoins] = useState();
   const [error, setError] = useState("");
   const [betType, setBetType] = useState("Open");
+  const marketName = location.state?.marketName;
+  const gameName = "Single Digit"; // Fixed game name
+
+  useEffect(() => {
+    const fetchWalletBalance = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setError("You need to log in to see your balance.");
+        return;
+      }
+      try {
+        const response = await axios.get('https://only-backend-je4j.onrender.com/api/wallet/balance', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        setCoins(response.data.walletBalance);
+      } catch (error) {
+        console.error('Error fetching wallet balance:', error);
+        setError("Failed to fetch wallet balance!");
+      }
+    };
+
+    fetchWalletBalance();
+  }, []);
+
+  useEffect(() => {
+    const fetchPlacedBets = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setError("You need to log in to see your bets.");
+        return;
+      }
+      try {
+        const response = await axios.get('https://only-backend-je4j.onrender.com/api/bets/user/', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        // Filter bets based on marketName and gameName
+        const filteredBets = response.data.bets.filter(bet =>
+          bet.marketName === marketName && bet.gameName === gameName);
+        setPlacedBets(filteredBets);
+      } catch (error) {
+        console.error('Error fetching placed bets:', error);
+        setError("Failed to fetch bets!");
+      }
+    };
+
+    fetchPlacedBets();
+  }, []);
 
   const handleAddBet = () => {
     if (!digit || !points) {
@@ -48,33 +103,58 @@ const SingleDigit = () => {
     setBets(bets.filter((_, i) => i !== index));
   };
 
-  const handlePlaceBet = () => {
-    const totalPoints = bets.reduce(
-      (sum, bet) => sum + parseInt(bet.points, 10),
-      0
-    );
-
+  const handlePlaceBet = async () => {
+    const totalPoints = bets.reduce((sum, bet) => sum + parseInt(bet.points, 10), 0);
+  
     if (totalPoints === 0) {
       setError("No bets to place!");
       return;
     }
-
+  
     if (coins < totalPoints) {
       setError("Insufficient coins!");
       return;
     }
-
-    const updatedPlacedBets = bets.map((bet) => ({
-      ...bet,
-      isPlaced: true,
-    }));
-
-    setPlacedBets([...placedBets, ...updatedPlacedBets]);
-    setCoins(coins - totalPoints);
-    setBets([]);
-    setError("");
-    alert("Bet placed successfully!");
+  
+    try {
+      const token = localStorage.getItem('token');
+      // Temporarily store bets for confirmation
+      let confirmedBets = [];
+      
+      for (const bet of bets) {
+        const response = await axios.post('https://only-backend-je4j.onrender.com/api/bets/place',
+          {
+            marketName: "Milan Day",
+            gameName: "Single Digit",
+            number: bet.digit,
+            amount: bet.points,
+            winningRatio: 9
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+        // Optionally check response status here
+        if (response.status === 200) {
+          confirmedBets.push({...bet, isPlaced: true, status: response.data.status || "Pending"});
+        }
+      }
+  
+      setPlacedBets([...placedBets, ...confirmedBets]);
+      setCoins(coins - totalPoints);
+      setBets([]);
+      setError("");
+      alert("All bets placed successfully!");
+    } catch (error) {
+      console.error('Error placing bets:', error);
+      setError("Failed to place bets!");
+    }
   };
+  
+  
 
   return (
     <div className="bg-gray-900 text-white min-h-screen p-4">
@@ -104,6 +184,7 @@ const SingleDigit = () => {
         </div>
       </header>
 
+      {/* Bet type selector */}
       <div className="flex justify-center mb-4">
         <button
           onClick={() => setBetType("Open")}
@@ -127,6 +208,7 @@ const SingleDigit = () => {
         </button>
       </div>
 
+      {/* Input for digit and points */}
       <div className="grid grid-cols-3 gap-3 mb-4">
         <input
           type="number"
@@ -150,12 +232,14 @@ const SingleDigit = () => {
         </button>
       </div>
 
+      {/* Error message display */}
       {error && (
         <div className="bg-red-600 text-white px-3 py-2 rounded-md text-center text-sm mb-4">
           {error}
         </div>
       )}
 
+      {/* Current Bets Table */}
       <div className="bg-gray-800 p-4 rounded-md shadow-md mb-4">
         <h3 className="text-base font-bold mb-3">Current Bets</h3>
         <table className="w-full table-auto mb-3 text-sm">
@@ -187,6 +271,7 @@ const SingleDigit = () => {
         </table>
       </div>
 
+      {/* Place Bet button */}
       <button
         onClick={handlePlaceBet}
         className="w-full bg-green-600 hover:bg-green-700 py-2 rounded-md font-bold text-sm transition duration-300 mb-4"
@@ -194,6 +279,7 @@ const SingleDigit = () => {
         Place Bet
       </button>
 
+      {/* Placed Bets Table */}
       <div className="bg-gray-800 p-4 rounded-md shadow-md">
         <h3 className="text-base font-bold mb-3">Placed Bets</h3>
         <table className="w-full table-auto text-sm">
@@ -206,20 +292,19 @@ const SingleDigit = () => {
             </tr>
           </thead>
           <tbody>
-            {placedBets.map((bet) => (
-              <tr key={bet.betId} className="border-b border-gray-700">
-                <td className="px-3 py-2">{bet.digit}</td>
-                <td className="px-3 py-2">{bet.points}</td>
-                <td className="px-3 py-2">{bet.betType}</td>
-                <td className="px-3 py-2">
-                  {bet.isWin ? (
-                    <span className="text-green-500 font-bold">Win</span>
-                  ) : (
-                    <span className="text-yellow-500 font-bold">Pending</span>
-                  )}
-                </td>
-              </tr>
-            ))}
+          {placedBets.map((bet) => (
+            <tr key={bet._id} className="border-b border-gray-700">
+              <td className="px-3 py-2">{bet.number}</td>
+              <td className="px-3 py-2">{bet.amount}</td>
+              <td className="px-3 py-2">{bet.betType}</td>
+              <td className="px-3 py-2">
+                <span className={`font-bold ${bet.status === "win" ? "text-green-500" : "text-yellow-500"}`}>
+                  {bet.status ? bet.status.charAt(0).toUpperCase() + bet.status.slice(1) : "Pending"}
+                </span>
+              </td>
+            </tr>
+          ))}
+
           </tbody>
         </table>
       </div>

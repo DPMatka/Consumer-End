@@ -40,7 +40,7 @@ function App() {
           <Route path="/play/:marketName" element={<MarketPlay />} />
           <Route path="/bets-history" element={<BetsHistory />} />
           <Route path="/single-digit" element={<SingleDigit />} />
-          <Route path="/single-digit/:marketName" element={<SingleDigit />} />
+          {/* <Route path="/single-digit/:marketName" element={<SingleDigit />} /> */}
           <Route path="/jodi-digit" element={<JodiDigit />} />
           <Route path="/single-pana" element={<SinglePana />} />
           <Route path="/double-pana" element={<DoublePana />} />

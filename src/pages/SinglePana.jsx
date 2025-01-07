@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const SinglePana = () => {
   const navigate = useNavigate();
@@ -7,9 +8,34 @@ const SinglePana = () => {
   const [points, setPoints] = useState("");
   const [bets, setBets] = useState([]);
   const [placedBets, setPlacedBets] = useState([]);
-  const [coins, setCoins] = useState(1000);
+  const [coins, setCoins] = useState();
   const [error, setError] = useState("");
   const [betType, setBetType] = useState("Open");
+
+  useEffect(() => {
+    const fetchWalletBalance = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setError("You need to log in to see your balance.");
+        return;
+      }
+      try {
+        const response = await axios.get('https://only-backend-je4j.onrender.com/api/wallet/balance', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        setCoins(response.data.walletBalance);
+      } catch (error) {
+        console.error('Error fetching wallet balance:', error);
+        setError("Failed to fetch wallet balance!");
+      }
+    };
+
+    fetchWalletBalance();
+  }, []);
+
 
   const handleAddBet = () => {
     if (!input || !points) {
