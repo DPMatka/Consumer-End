@@ -67,7 +67,7 @@ const MarketPlay = () => {
         onClick={() => navigate("/bets-history", { state: { marketName } })}
       >
         <i className="fas fa-history"></i>
-        Bet History
+        Play History
       </button>
   
       <button

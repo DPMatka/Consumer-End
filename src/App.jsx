@@ -19,6 +19,7 @@ import Profile from './pages/Profile';
 import Contact from './pages/Contact';
 import Wallet from './pages/Wallet';
 import Help from './pages/Help';
+import GameRates from './pages/GameRates';
 
 function App() {
   return (
@@ -51,6 +52,7 @@ function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/wallet" element={<Wallet />} />
           <Route path="/help" element={<Help />}/>
+          <Route path="/game-rates" element={<GameRates />}/>
         </Route>
       </Routes>
     </Router>

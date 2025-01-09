@@ -43,19 +43,19 @@ const BetsHistory = () => {
             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
           </svg>
         </button>
-        <h2 className="text-lg font-bold">{marketName ? `${marketName} Bet History` : "Bet History"}</h2>
+        <h2 className="text-lg font-bold">{marketName ? `${marketName} Play History` : "Play History"}</h2>
       </div>
 
       {/* Bets Table */}
       {bets.length === 0 ? (
-        <div className="text-center text-gray-400">No bets found.</div>
+        <div className="text-center text-gray-400">No plays found.</div>
       ) : (
         <div className="bg-gray-800 p-4 rounded-lg shadow-md">
           <table className="w-full table-auto text-sm">
             <thead>
               <tr className="bg-gray-700">
                 <th className="p-2 text-left">Game</th>
-                <th className="p-2 text-left">Bet Type</th>
+                <th className="p-2 text-left">Play Type</th>
                 <th className="p-2 text-left">Amount</th>
                 <th className="p-2 text-left">Status</th>
                 <th className="p-2 text-left">Date</th>

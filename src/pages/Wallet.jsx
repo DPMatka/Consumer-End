@@ -84,16 +84,18 @@ const Wallet = () => {
       console.error('Error posting transaction:', error);
       setError("Failed to post transaction");
     }
+
+    const whatsappNumber = "7051098359";
+    const whatsappMessage = `I want to withdraw ${amount} coins.`;
+    const whatsappURL = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
+      whatsappMessage
+    )}`;
+    window.open(whatsappURL, "_blank");
+
   };
 
   const handleDeposit = () => {
-    const depositAmount = parseFloat(amount);
-    if (!depositAmount || depositAmount <= 0) {
-      setError("Please enter a valid deposit amount.");
-      return;
-    }
-    postTransaction("Deposit", depositAmount);
-    setAmount("");
+    navigate('/add-funds'); // Redirect to the Add Funds page
   };
 
   const handleWithdraw = () => {

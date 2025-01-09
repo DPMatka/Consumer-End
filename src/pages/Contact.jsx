@@ -17,7 +17,6 @@ const Contact = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Add your form submission logic here, e.g., send data to backend
     console.log("Submitted:", formData);
     setSubmitted(true);
     setFormData({
@@ -114,6 +113,19 @@ const Contact = () => {
             Thank you for contacting us! We'll get back to you soon.
           </div>
         )}
+      </div>
+
+      {/* WhatsApp Section */}
+      <div className="mt-5 flex justify-center">
+        <a
+          href="https://wa.me/7051098359"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300"
+        >
+          <i className="fab fa-whatsapp text-2xl"></i>
+          <span>Chat with Us on WhatsApp</span>
+        </a>
       </div>
     </div>
   );

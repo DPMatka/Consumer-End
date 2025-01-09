@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlay } from '@fortawesome/free-solid-svg-icons';
+import { faPlay, faCommentDots } from '@fortawesome/free-solid-svg-icons';
+import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -94,6 +95,14 @@ const HomePage = () => {
           )}
         </div>
       )}
+
+      <a href="https://wa.me/917051098359" target="_blank" rel="noopener noreferrer"
+        className="fixed bottom-4 right-4 bg-green-600 p-3 rounded-full text-white shadow-lg transition-all duration-300 hover:bg-green-700"
+        style={{ zIndex: 1000 }}
+      >
+        <FontAwesomeIcon icon={faWhatsapp} size="lg" />
+      </a>
+
     </div>
   );
 };

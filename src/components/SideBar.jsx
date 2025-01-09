@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
   const navigate = useNavigate();
+  const [userName, setUserName] = useState('Loading...'); // Placeholder for user's name
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -16,13 +18,41 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
     { icon: 'receipt_long', label: 'Coin Settlements', path: '/coin-settlements' },
     { icon: 'help_outline', label: 'Help', path: '/help' },
     { icon: 'contact_phone', label: 'Contact Support', path: '/contact' },
+    { icon: 'casino', label: 'Game Rates', path: '/game-rates' }, // Added new menu item for Game Rates
   ];
+
+  useEffect(() => {
+    const fetchUserName = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setUserName('Guest');
+        return;
+      }
+
+      try {
+        const { data } = await axios.get(
+          'https://only-backend-je4j.onrender.com/api/users/profile',
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        setUserName(data.name || 'User');
+      } catch (error) {
+        console.error('Error fetching user name:', error);
+        setUserName('User'); // Fallback to 'User' if the API fails
+      }
+    };
+
+    fetchUserName();
+  }, []);
 
   return (
     <>
       {/* Overlay */}
       <div
-        className={`fixed inset-0 bg-black bg-opacity-50 z-30 ${isSidebarOpen ? 'block' : 'hidden'}`}
+        className={`fixed inset-0 bg-black bg-opacity-50 z-30 ${
+          isSidebarOpen ? 'block' : 'hidden'
+        }`}
         onClick={toggleSidebar}
       ></div>
 
@@ -42,8 +72,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
                 className="w-12 h-12 rounded-full"
               />
               <div>
-                <h3 className="text-lg font-semibold">Bhavya Kothari</h3>
-                {/* <p className="text-sm text-gray-400">Profile</p>  Removed the coins display */}
+                <h3 className="text-lg font-semibold">{userName}</h3>
               </div>
             </div>
 
