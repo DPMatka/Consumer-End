@@ -9,6 +9,7 @@ const CoinSettlements = () => {
   useEffect(() => {
     const fetchTransactions = async () => {
       const token = localStorage.getItem('token'); // Assumes token is stored in localStorage
+      console.log(token)
       if (!token) {
         console.error("No token found, please log in again.");
         return;
