@@ -1,14 +1,28 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlay, faCommentDots } from '@fortawesome/free-solid-svg-icons';
+import { faPlay } from '@fortawesome/free-solid-svg-icons';
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 
 const HomePage = () => {
   const navigate = useNavigate();
   const [allMarkets, setAllMarkets] = useState([]);
   const [loading, setLoading] = useState(true); // Loader state
+
+  // Helper function to format market results
+  const formatMarketResult = (result) => {
+    if (!result) return "xxx-xx-xxx";
+
+    const segments = result.split("-");
+
+    // Normalize segments to fit Open-Close-Final format
+    const open = segments[0]?.padEnd(3, "x").slice(0, 3) || "xxx";
+    const close = segments[1]?.padEnd(2, "x").slice(0, 2) || "xx";
+    const final = segments[2]?.padEnd(3, "x").slice(0, 3) || "xxx";
+
+    return `${open}-${close}-${final}`;
+  };
 
   useEffect(() => {
     const fetchAllMarkets = async () => {
@@ -27,6 +41,7 @@ const HomePage = () => {
 
   return (
     <div className="font-sans bg-gray-900 text-white p-4 min-h-screen">
+      {/* Banner Section */}
       <div className="my-4 flex justify-center items-center overflow-hidden rounded-lg shadow-lg max-w-3xl mx-auto">
         <img
           src="https://static.vecteezy.com/system/resources/previews/038/811/462/large_2x/ai-generated-beautiful-background-for-poker-game-advertising-free-photo.jpeg"
@@ -35,6 +50,7 @@ const HomePage = () => {
         />
       </div>
 
+      {/* Action Buttons */}
       <div className="flex justify-center items-center gap-4 mb-4">
         <button
           className="text-sm font-medium py-2 px-4 bg-gradient-to-r from-red-700 to-red-900 text-white rounded-lg shadow-md hover:from-red-800 hover:to-red-900 transition-colors duration-300"
@@ -50,6 +66,7 @@ const HomePage = () => {
         </button>
       </div>
 
+      {/* Markets Section */}
       <h2 className="text-xl font-bold text-center mb-4">All Markets</h2>
 
       {loading ? (
@@ -80,7 +97,9 @@ const HomePage = () => {
                 </div>
                 <div className="text-gray-300">
                   <p className="text-xs">Open: {market.openTime} | Close: {market.closeTime}</p>
-                  <p className="text-sm mb-2 text-yellow-500">679 - 24 - 248</p>
+                  <p className="text-sm mt-1 text-yellow-500 font-bold">
+                    {formatMarketResult(market.results?.["Market Result"])}
+                  </p>
                 </div>
                 {market.isBettingOpen && (
                   <button
@@ -96,13 +115,13 @@ const HomePage = () => {
         </div>
       )}
 
+      {/* WhatsApp Button */}
       <a href="https://wa.me/917051098359" target="_blank" rel="noopener noreferrer"
         className="fixed bottom-4 right-4 bg-green-600 p-3 rounded-full text-white shadow-lg transition-all duration-300 hover:bg-green-700"
         style={{ zIndex: 1000 }}
       >
         <FontAwesomeIcon icon={faWhatsapp} size="lg" />
       </a>
-
     </div>
   );
 };

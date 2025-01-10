@@ -1,10 +1,42 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import winHistoryData from "./winHistory.json"; // Importing sample win data
+import axios from "axios";
 
 const WinHistory = () => {
   const navigate = useNavigate();
-  const [wins] = useState(winHistoryData.wins); // Directly using sample JSON data
+  const [wins, setWins] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchWinningBets = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("You must be logged in to view this page.");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const { data } = await axios.get(
+          "https://only-backend-je4j.onrender.com/api/bets/user",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
+        const winningBets = data.bets.filter((bet) => bet.status === "won");
+        setWins(winningBets);
+      } catch (err) {
+        console.error("Error fetching winning bets:", err);
+        setError("Failed to fetch winning bets.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchWinningBets();
+  }, []);
 
   return (
     <div className="bg-gray-900 text-white min-h-screen p-4">
@@ -32,35 +64,45 @@ const WinHistory = () => {
         <h2 className="text-lg font-bold">Win History</h2>
       </div>
 
-      {/* Wins Table */}
-      {wins.length === 0 ? (
+      {/* Content */}
+      {loading ? (
+        <div className="flex justify-center items-center">
+          <div className="loader w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      ) : error ? (
+        <div className="bg-red-600 text-white p-3 rounded-md text-center">
+          {error}
+        </div>
+      ) : wins.length === 0 ? (
         <div className="text-center text-gray-400">No wins found.</div>
       ) : (
         <div className="bg-gray-800 p-4 rounded-lg shadow-md">
           <table className="w-full table-auto text-sm">
             <thead>
               <tr className="bg-gray-700">
+                <th className="p-2 text-left">Market</th>
                 <th className="p-2 text-left">Game</th>
-                <th className="p-2 text-left">Bet Type</th>
-                <th className="p-2 text-left">Points</th>
+                <th className="p-2 text-left">Number</th>
+                <th className="p-2 text-left">Bet Amount</th>
                 <th className="p-2 text-left">Win Amount</th>
                 <th className="p-2 text-left">Date</th>
               </tr>
             </thead>
             <tbody>
-              {wins.map((win, index) => (
+              {wins.map((win) => (
                 <tr
-                  key={index}
+                  key={win._id}
                   className="border-b border-gray-700 hover:bg-gray-700 transition"
                 >
-                  <td className="p-2">{win.game}</td>
-                  <td className="p-2">{win.betType}</td>
-                  <td className="p-2">{win.points}</td>
+                  <td className="p-2">{win.marketName}</td>
+                  <td className="p-2">{win.gameName}</td>
+                  <td className="p-2">{win.number}</td>
+                  <td className="p-2">{win.amount}</td>
                   <td className="p-2 text-green-500 font-semibold">
-                    {win.winAmount}
+                    {win.amount * win.winningRatio}
                   </td>
                   <td className="p-2">
-                    {new Date(win.date).toLocaleDateString()}
+                    {new Date(win.createdAt).toLocaleDateString()}
                   </td>
                 </tr>
               ))}
