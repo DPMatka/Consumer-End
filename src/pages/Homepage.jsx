@@ -44,7 +44,7 @@ const HomePage = () => {
       {/* Banner Section */}
       <div className="my-4 flex justify-center items-center overflow-hidden rounded-lg shadow-lg max-w-3xl mx-auto">
         <img
-          src="https://static.vecteezy.com/system/resources/previews/038/811/462/large_2x/ai-generated-beautiful-background-for-poker-game-advertising-free-photo.jpeg"
+          src="https://images.stockcake.com/public/8/f/3/8f3758d9-f547-4748-9f52-dad7837da75a_large/mystical-fiery-pot-stockcake.jpg"
           alt="Casino Banner"
           className="object-cover rounded-lg w-full max-h-48"
         />
