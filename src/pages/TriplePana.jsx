@@ -1,6 +1,6 @@
-import axios from "axios";
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const TriplePana = () => {
   const navigate = useNavigate();
@@ -54,13 +54,11 @@ const TriplePana = () => {
 
     const newBet = {
       betId: Math.random().toString(36).substr(2, 9),
-      userId: "12345",
-      gameId: "triple-pana",
-      betType,
       input,
       points,
+      betType,
       isPlaced: false,
-      isWin: false,
+      isWin: false
     };
 
     setBets([...bets, newBet]);
@@ -73,11 +71,8 @@ const TriplePana = () => {
     setBets(bets.filter((_, i) => i !== index));
   };
 
-  const handlePlaceBet = () => {
-    const totalPoints = bets.reduce(
-      (sum, bet) => sum + parseInt(bet.points, 10),
-      0
-    );
+  const handlePlaceBet = async () => {
+    const totalPoints = bets.reduce((sum, bet) => sum + parseInt(bet.points, 10), 0);
 
     if (totalPoints === 0) {
       setError("No bets to place!");
@@ -89,16 +84,50 @@ const TriplePana = () => {
       return;
     }
 
-    const updatedPlacedBets = bets.map((bet) => ({
-      ...bet,
-      isPlaced: true,
-    }));
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setError("You need to log in to place bets.");
+      return;
+    }
 
-    setPlacedBets([...placedBets, ...updatedPlacedBets]);
-    setCoins(coins - totalPoints);
-    setBets([]);
-    setError("");
-    alert("Bet placed successfully!");
+    try {
+      const responses = await Promise.all(
+        bets.map(bet =>
+          axios.post(
+            "https://only-backend-je4j.onrender.com/api/bets/place",
+            {
+              marketName: "Milan Day",
+              gameName: "Triple Pana",
+              number: bet.input,
+              amount: bet.points,
+              winningRatio: 9,
+              betType: bet.betType
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              }
+            }
+          )
+        )
+      );
+
+      const confirmedBets = responses.map((resp, index) => ({
+        ...bets[index],
+        isPlaced: true,
+        status: resp.data.status || "Pending"
+      }));
+
+      setPlacedBets([...placedBets, ...confirmedBets]);
+      setCoins(coins - totalPoints);
+      setBets([]);
+      setError("");
+      alert("All bets placed successfully!");
+    } catch (error) {
+      console.error("Error placing bets:", error);
+      setError("Failed to place bets!");
+    }
   };
 
   return (

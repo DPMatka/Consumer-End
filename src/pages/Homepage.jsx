@@ -50,6 +50,11 @@ const HomePage = () => {
         />
       </div>
 
+      {/* Marquee Text */}
+      <marquee className="text-sm font-medium bg-gray-800 py-2">
+        100% Genuine! Deposits and Withdrawals are available 24x7
+      </marquee>
+
       {/* Action Buttons */}
       <div className="flex justify-center items-center gap-4 mb-4">
         <button

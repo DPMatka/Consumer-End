@@ -8,7 +8,7 @@ const DoublePana = () => {
   const [points, setPoints] = useState("");
   const [bets, setBets] = useState([]);
   const [placedBets, setPlacedBets] = useState([]);
-  const [coins, setCoins] = useState(1000);
+  const [coins, setCoins] = useState(1000);  // Example default value
   const [error, setError] = useState("");
   const [betType, setBetType] = useState("Open");
 
@@ -54,13 +54,11 @@ const DoublePana = () => {
 
     const newBet = {
       betId: Math.random().toString(36).substr(2, 9),
-      userId: "12345",
-      gameId: "double-pana",
-      betType,
       input,
       points,
+      betType,
       isPlaced: false,
-      isWin: false,
+      isWin: false
     };
 
     setBets([...bets, newBet]);
@@ -73,11 +71,8 @@ const DoublePana = () => {
     setBets(bets.filter((_, i) => i !== index));
   };
 
-  const handlePlaceBet = () => {
-    const totalPoints = bets.reduce(
-      (sum, bet) => sum + parseInt(bet.points, 10),
-      0
-    );
+  const handlePlaceBet = async () => {
+    const totalPoints = bets.reduce((sum, bet) => sum + parseInt(bet.points, 10), 0);
 
     if (totalPoints === 0) {
       setError("No bets to place!");
@@ -89,16 +84,50 @@ const DoublePana = () => {
       return;
     }
 
-    const updatedPlacedBets = bets.map((bet) => ({
-      ...bet,
-      isPlaced: true,
-    }));
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setError("You need to log in to place bets.");
+      return;
+    }
 
-    setPlacedBets([...placedBets, ...updatedPlacedBets]);
-    setCoins(coins - totalPoints);
-    setBets([]);
-    setError("");
-    alert("Bet placed successfully!");
+    try {
+      const responses = await Promise.all(
+        bets.map(bet =>
+          axios.post(
+            "https://only-backend-je4j.onrender.com/api/bets/place",
+            {
+              marketName: "Milan Day",
+              gameName: "Double Pana",
+              number: bet.input,
+              amount: bet.points,
+              winningRatio: 9,
+              betType: bet.betType
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              }
+            }
+          )
+        )
+      );
+
+      const confirmedBets = responses.map((resp, index) => ({
+        ...bets[index],
+        isPlaced: true,
+        status: resp.data.status || "Pending"
+      }));
+
+      setPlacedBets([...placedBets, ...confirmedBets]);
+      setCoins(coins - totalPoints);
+      setBets([]);
+      setError("");
+      alert("All bets placed successfully!");
+    } catch (error) {
+      console.error("Error placing bets:", error);
+      setError("Failed to place bets!");
+    }
   };
 
   return (
@@ -129,21 +158,23 @@ const DoublePana = () => {
         </div>
       </header>
 
+      {/* Bet Type Buttons */}
       <div className="flex justify-center mb-3">
         <button
           onClick={() => setBetType("Open")}
-          className="px-4 py-1 rounded-l-lg font-bold text-sm bg-gray-800 text-gray-400 hover:bg-purple-700 transition duration-300"
+          className={`px-4 py-1 rounded-l-lg font-bold text-sm ${betType === "Open" ? "bg-purple-600 text-white" : "bg-gray-800 text-gray-400"} hover:bg-purple-700 transition duration-300`}
         >
           Open
         </button>
         <button
           onClick={() => setBetType("Close")}
-          className="px-4 py-1 rounded-r-lg font-bold text-sm bg-gray-800 text-gray-400 hover:bg-purple-700 transition duration-300"
+          className={`px-4 py-1 rounded-r-lg font-bold text-sm ${betType === "Close" ? "bg-purple-600 text-white" : "bg-gray-800 text-gray-400"} hover:bg-purple-700 transition duration-300`}
         >
           Close
         </button>
       </div>
 
+      {/* Input Fields and Add Bet Button */}
       <div className="grid grid-cols-3 gap-3 mb-3">
         <input
           type="text"
@@ -167,12 +198,14 @@ const DoublePana = () => {
         </button>
       </div>
 
+      {/* Error Message Display */}
       {error && (
         <div className="bg-red-500 text-white px-3 py-1 rounded-lg text-center mb-3 text-xs">
           {error}
         </div>
       )}
 
+      {/* Current Bets Table */}
       <div className="bg-gray-800 p-3 rounded-lg shadow-md mb-3">
         <h3 className="text-sm font-bold mb-3">Current Bets</h3>
         <table className="w-full table-auto text-xs">
@@ -204,6 +237,7 @@ const DoublePana = () => {
         </table>
       </div>
 
+      {/* Place Bet Button */}
       <button
         onClick={handlePlaceBet}
         className="w-full bg-green-500 hover:bg-green-600 py-2 rounded-lg font-bold text-sm mb-3 transition duration-300"
@@ -211,6 +245,7 @@ const DoublePana = () => {
         Place Bet
       </button>
 
+      {/* Placed Bets Table */}
       <div className="bg-gray-800 p-3 rounded-lg shadow-md">
         <h3 className="text-sm font-bold mb-3">Placed Bets</h3>
         <table className="w-full table-auto text-xs">

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import axios from 'axios';
+import axios from "axios";
 
 const SingleDigit = () => {
   const navigate = useNavigate();
@@ -12,26 +12,29 @@ const SingleDigit = () => {
   const [coins, setCoins] = useState();
   const [error, setError] = useState("");
   const [betType, setBetType] = useState("Open");
-  const marketName = location.state?.marketName;
-  const gameName = "Single Digit"; // Fixed game name
+  const marketName = location.state?.marketName || "Milan Day"; // Default to "Milan Day" if marketName is not provided
+  const gameName = "Single Digit";
 
   useEffect(() => {
     const fetchWalletBalance = async () => {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       if (!token) {
         setError("You need to log in to see your balance.");
         return;
       }
       try {
-        const response = await axios.get('https://only-backend-je4j.onrender.com/api/wallet/balance', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
+        const response = await axios.get(
+          "https://only-backend-je4j.onrender.com/api/wallet/balance",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
           }
-        });
+        );
         setCoins(response.data.walletBalance);
       } catch (error) {
-        console.error('Error fetching wallet balance:', error);
+        console.error("Error fetching wallet balance:", error);
         setError("Failed to fetch wallet balance!");
       }
     };
@@ -41,30 +44,33 @@ const SingleDigit = () => {
 
   useEffect(() => {
     const fetchPlacedBets = async () => {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       if (!token) {
         setError("You need to log in to see your bets.");
         return;
       }
       try {
-        const response = await axios.get('https://only-backend-je4j.onrender.com/api/bets/user/', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
+        const response = await axios.get(
+          "https://only-backend-je4j.onrender.com/api/bets/user/",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
           }
-        });
-        // Filter bets based on marketName and gameName
-        const filteredBets = response.data.bets.filter(bet =>
-          bet.marketName === marketName && bet.gameName === gameName);
+        );
+        const filteredBets = response.data.bets.filter(
+          (bet) => bet.marketName === marketName && bet.gameName === gameName
+        );
         setPlacedBets(filteredBets);
       } catch (error) {
-        console.error('Error fetching placed bets:', error);
+        console.error("Error fetching placed bets:", error);
         setError("Failed to fetch bets!");
       }
     };
 
     fetchPlacedBets();
-  }, []);
+  }, [marketName, gameName]);
 
   const handleAddBet = () => {
     if (!digit || !points) {
@@ -84,13 +90,9 @@ const SingleDigit = () => {
 
     const newBet = {
       betId: Math.random().toString(36).substr(2, 9),
-      userId: "12345",
-      gameId: "single-digit",
-      betType,
       digit,
       points,
-      isPlaced: false,
-      isWin: false,
+      betType,
     };
 
     setBets([...bets, newBet]);
@@ -104,57 +106,63 @@ const SingleDigit = () => {
   };
 
   const handlePlaceBet = async () => {
-    const totalPoints = bets.reduce((sum, bet) => sum + parseInt(bet.points, 10), 0);
-  
+    const totalPoints = bets.reduce(
+      (sum, bet) => sum + parseInt(bet.points, 10),
+      0
+    );
+
     if (totalPoints === 0) {
       setError("No bets to place!");
       return;
     }
-  
+
     if (coins < totalPoints) {
       setError("Insufficient coins!");
       return;
     }
-  
+
     try {
-      const token = localStorage.getItem('token');
-      // Temporarily store bets for confirmation
+      const token = localStorage.getItem("token");
       let confirmedBets = [];
-      
+
       for (const bet of bets) {
-        const response = await axios.post('https://only-backend-je4j.onrender.com/api/bets/place',
+        const response = await axios.post(
+          "https://only-backend-je4j.onrender.com/api/bets/place",
           {
-            marketName: "Milan Day",
-            gameName: "Single Digit",
+            marketName,
+            gameName,
             number: bet.digit,
             amount: bet.points,
-            winningRatio: 9
+            winningRatio: 9,
+            betType: bet.betType, // Include betType in the request body
           },
           {
             headers: {
               Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            }
+              "Content-Type": "application/json",
+            },
           }
         );
-        // Optionally check response status here
+
         if (response.status === 200) {
-          confirmedBets.push({...bet, isPlaced: true, status: response.data.status || "Pending"});
+          confirmedBets.push({
+            ...bet,
+            isPlaced: true,
+            status: response.data.status || "Pending",
+          });
         }
       }
-  
+
       setPlacedBets([...placedBets, ...confirmedBets]);
       setCoins(coins - totalPoints);
       setBets([]);
       setError("");
       alert("All bets placed successfully!");
     } catch (error) {
-      console.error('Error placing bets:', error);
+      console.error("Error placing bets:", error);
       setError("Failed to place bets!");
     }
   };
-  
-  
 
   return (
     <div className="bg-gray-900 text-white min-h-screen p-4">
@@ -232,7 +240,7 @@ const SingleDigit = () => {
         </button>
       </div>
 
-      {/* Error message display */}
+      {/* Error message */}
       {error && (
         <div className="bg-red-600 text-white px-3 py-2 rounded-md text-center text-sm mb-4">
           {error}
@@ -292,19 +300,24 @@ const SingleDigit = () => {
             </tr>
           </thead>
           <tbody>
-          {placedBets.map((bet) => (
-            <tr key={bet._id} className="border-b border-gray-700">
-              <td className="px-3 py-2">{bet.number}</td>
-              <td className="px-3 py-2">{bet.amount}</td>
-              <td className="px-3 py-2">{bet.betType}</td>
-              <td className="px-3 py-2">
-                <span className={`font-bold ${bet.status === "win" ? "text-green-500" : "text-yellow-500"}`}>
-                  {bet.status ? bet.status.charAt(0).toUpperCase() + bet.status.slice(1) : "Pending"}
-                </span>
-              </td>
-            </tr>
-          ))}
-
+            {placedBets.map((bet) => (
+              <tr key={bet._id} className="border-b border-gray-700">
+                <td className="px-3 py-2">{bet.number}</td>
+                <td className="px-3 py-2">{bet.amount}</td>
+                <td className="px-3 py-2">{bet.betType}</td>
+                <td className="px-3 py-2">
+                  <span
+                    className={`font-bold ${
+                      bet.status === "win" ? "text-green-500" : "text-yellow-500"
+                    }`}
+                  >
+                    {bet.status
+                      ? bet.status.charAt(0).toUpperCase() + bet.status.slice(1)
+                      : "Pending"}
+                  </span>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>

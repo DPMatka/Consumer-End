@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from 'axios';
-import { v4 as uuidv4 } from 'uuid'; // Import UUID library to generate unique transaction IDs
+import { v4 as uuidv4 } from 'uuid';
 
 const Wallet = () => {
   const navigate = useNavigate();
@@ -28,7 +28,7 @@ const Wallet = () => {
 
         setBalance(balanceResponse.data.walletBalance);
         const transactions = transactionsResponse.data.transactions
-          .filter(tx => tx.status === "pending") // Only include transactions with status "pending"
+          .filter(tx => tx.status === "pending")
           .map(tx => ({
             id: tx._id,
             type: "Transaction",
@@ -52,24 +52,26 @@ const Wallet = () => {
       return;
     }
 
-    const transactionId = uuidv4(); // Generate a unique transaction ID
+    const transactionId = uuidv4();
     const receiptUrl = "https://example.com/receipt.jpg"; // Placeholder receipt URL
 
     try {
-      const response = await axios.post('https://only-backend-je4j.onrender.com/api/wallet/add-funds', 
-      { 
-        transactionId,
-        amount,
-        receiptUrl
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
+      const response = await axios.post(
+        'https://only-backend-je4j.onrender.com/api/wallet/add-funds',
+        {
+          transactionId,
+          amount,
+          receiptUrl
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
         }
-      });
+      );
 
-      if (response.data.transaction.status === "pending") { // Check if the new transaction is pending
+      if (response.data.transaction.status === "pending") {
         const newTransaction = {
           id: response.data.transaction._id,
           type: type,
@@ -78,7 +80,7 @@ const Wallet = () => {
         };
         setPendingRequests(prev => [...prev, newTransaction]);
       }
-      
+
       alert(`Transaction request for ${amount} coins has been logged as ${type}.`);
     } catch (error) {
       console.error('Error posting transaction:', error);
@@ -91,7 +93,6 @@ const Wallet = () => {
       whatsappMessage
     )}`;
     window.open(whatsappURL, "_blank");
-
   };
 
   const handleDeposit = () => {
@@ -100,10 +101,15 @@ const Wallet = () => {
 
   const handleWithdraw = () => {
     const withdrawAmount = parseFloat(amount);
-    if (!withdrawAmount || withdrawAmount <= 0) {
-      setError("Please enter a valid withdraw amount.");
+    if (!withdrawAmount || withdrawAmount < 500) {
+      setError("The minimum withdrawal amount is 500.");
       return;
     }
+    if (withdrawAmount > balance) {
+      setError("Insufficient balance for this withdrawal.");
+      return;
+    }
+
     postTransaction("Withdrawal", withdrawAmount);
     setAmount("");
   };

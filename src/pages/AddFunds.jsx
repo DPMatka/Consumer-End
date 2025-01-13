@@ -25,7 +25,7 @@ const AddFunds = () => {
     formData.append('transactionId', trimmedTransactionId);
     formData.append('amount', parsedAmount);
     if (receipt) {
-      formData.append('receiptUrl', receipt);
+      formData.append('receipt', receipt);
     }
 
     try {
@@ -37,7 +37,7 @@ const AddFunds = () => {
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
+            'Content-Type': 'multipart/form-data', // This should be multipart/form-data when sending files
           },
         }
       );
@@ -83,6 +83,15 @@ const AddFunds = () => {
           </svg>
         </button>
         <h2 className="text-xl font-bold ml-4">Add Coins</h2>
+      </div>
+
+      {/* Image Section */}
+      <div className="w-full max-w-md mb-4">
+        <img
+          src="https://storage.googleapis.com/dara-c1b52.appspot.com/daras_ai/media/a3202e58-17ef-11ee-9a70-8e93953183bb/cleaned_qr.png"
+          alt="Payment QR Code"
+          className="w-full h-auto rounded-lg"
+        />
       </div>
 
       <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md">
