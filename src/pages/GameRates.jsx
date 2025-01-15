@@ -1,17 +1,28 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 const GameRates = () => {
   const navigate = useNavigate();
+  const [gameRates, setGameRates] = useState([]); // Updated to store rates from the API
 
-  // Sample game rates data
-  const gameRates = [
-    { game: "Single Digit", rate: "1:10" },
-    { game: "Jodi Digit", rate: "1:90" },
-    { game: "Single Pana", rate: "1:150" },
-    { game: "Double Pana", rate: "1:300" },
-    { game: "Triple Pana", rate: "1:600" },
-  ];
+  useEffect(() => {
+    const fetchRates = async () => {
+      try {
+        const response = await axios.get('https://only-backend-je4j.onrender.com/api/admin/winning-ratios', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        setGameRates(response.data.winningRatios);
+      } catch (error) {
+        console.error('Failed to fetch game rates:', error);
+        // Handle error or show message to user
+      }
+    };
+
+    fetchRates();
+  }, []);
 
   return (
     <div className="bg-gray-900 text-white min-h-screen p-5">
@@ -50,13 +61,13 @@ const GameRates = () => {
             </tr>
           </thead>
           <tbody>
-            {gameRates.map((rate, index) => (
+            {gameRates.map((rate) => (
               <tr
-                key={index}
+                key={rate._id}
                 className="border-b border-gray-700 hover:bg-gray-700 transition"
               >
-                <td className="p-3">{rate.game}</td>
-                <td className="p-3">{rate.rate}</td>
+                <td className="p-3">{rate.gameName}</td>
+                <td className="p-3">1:{rate.ratio}</td>
               </tr>
             ))}
           </tbody>

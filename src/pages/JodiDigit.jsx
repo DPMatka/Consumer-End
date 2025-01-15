@@ -16,46 +16,46 @@ const JodiDigit = () => {
   const gameName = "Jodi Digit";
 
   useEffect(() => {
-    const fetchWalletBalanceAndBets = async () => {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        setError("You need to log in to view your balance and bets.");
-        return;
-      }
-
-      const headers = {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      };
-
-      try {
-        const walletResponse = axios.get(
-          "https://only-backend-je4j.onrender.com/api/wallet/balance",
-          { headers }
-        );
-        const betsResponse = axios.get(
-          "https://only-backend-je4j.onrender.com/api/bets/user",
-          { headers }
-        );
-
-        const [walletData, betsData] = await Promise.all([
-          walletResponse,
-          betsResponse,
-        ]);
-        setCoins(walletData.data.walletBalance);
-
-        const filteredBets = betsData.data.bets.filter(
-          (bet) => bet.marketName === marketName && bet.gameName === gameName
-        );
-        setPlacedBets(filteredBets);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        setError("Failed to fetch data!");
-      }
-    };
-
     fetchWalletBalanceAndBets();
   }, [marketName, gameName]);
+
+  const fetchWalletBalanceAndBets = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setError("You need to log in to view your balance and bets.");
+      return;
+    }
+
+    const headers = {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    };
+
+    try {
+      const walletResponse = axios.get(
+        "https://only-backend-je4j.onrender.com/api/wallet/balance",
+        { headers }
+      );
+      const betsResponse = axios.get(
+        "https://only-backend-je4j.onrender.com/api/bets/user",
+        { headers }
+      );
+
+      const [walletData, betsData] = await Promise.all([
+        walletResponse,
+        betsResponse,
+      ]);
+      setCoins(walletData.data.walletBalance);
+
+      const filteredBets = betsData.data.bets.filter(
+        (bet) => bet.marketName === marketName && bet.gameName === gameName
+      );
+      setPlacedBets(filteredBets);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      setError("Failed to fetch data!");
+    }
+  };
 
   const handleAddBet = () => {
     if (!input || !points) {
@@ -110,7 +110,7 @@ const JodiDigit = () => {
     }
 
     try {
-      const responses = await Promise.all(
+      await Promise.all(
         bets.map((bet) =>
           axios.post(
             "https://only-backend-je4j.onrender.com/api/bets/place",
@@ -131,16 +131,9 @@ const JodiDigit = () => {
           )
         )
       );
-
-      setPlacedBets([
-        ...placedBets,
-        ...responses.map((resp, index) => ({
-          ...bets[index],
-          status: resp.data.status || "Pending",
-        })),
-      ]);
       setCoins(coins - totalPoints);
       setBets([]);
+      fetchWalletBalanceAndBets(); // Refetch data after placing bets
       setError("");
       alert("All bets placed successfully!");
     } catch (error) {
@@ -252,8 +245,8 @@ const JodiDigit = () => {
                     className="bg-red-600 hover:bg-red-700 px-2 py-1 rounded-md text-white text-xs font-medium transition duration-200"
                   >
                     Delete
-                  </button>
-                </td>
+                  </button
+                ></td>
               </tr>
             ))}
           </tbody>
@@ -280,7 +273,7 @@ const JodiDigit = () => {
           </thead>
           <tbody>
             {placedBets.map((bet, index) => (
-              <tr key={bet._id || index} className="border-b border-gray-700">
+              <tr key={bet.betId || index} className="border-b border-gray-700">
                 <td className="px-3 py-1">{bet.number}</td>
                 <td className="px-3 py-1">{bet.amount}</td>
                 <td className="px-3 py-1">{bet.betType}</td>
@@ -290,9 +283,7 @@ const JodiDigit = () => {
                       bet.status === "win" ? "text-green-500" : "text-yellow-500"
                     }`}
                   >
-                    {bet.status
-                      ? bet.status.charAt(0).toUpperCase() + bet.status.slice(1)
-                      : "Pending"}
+                    {bet.status ? bet.status.charAt(0).toUpperCase() + bet.status.slice(1) : "Pending"}
                   </span>
                 </td>
               </tr>

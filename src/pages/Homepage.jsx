@@ -11,24 +11,23 @@ const HomePage = () => {
   const [loading, setLoading] = useState(true); // Loader state
 
   // Helper function to format market results
-  const formatMarketResult = (result) => {
-    if (!result) return "xxx-xx-xxx";
+  const formatMarketResult = (results) => {
+    if (!results) return "xxx-xx-xxx";
 
-    const segments = result.split("-");
+    const open = results.openNumber?.padEnd(3, 'x').slice(0, 3) || "xxx";
+    const close = results.closeNumber?.padEnd(3, 'x').slice(0, 3) || "xxx";
+    const jodi = results.jodiResult?.toString().padEnd(2, 'x').slice(0, 2) || "xx";
 
-    // Normalize segments to fit Open-Close-Final format
-    const open = segments[0]?.padEnd(3, "x").slice(0, 3) || "xxx";
-    const close = segments[1]?.padEnd(2, "x").slice(0, 2) || "xx";
-    const final = segments[2]?.padEnd(3, "x").slice(0, 3) || "xxx";
-
-    return `${open}-${close}-${final}`;
+    return `${open}-${jodi}-${close}`;
   };
 
   useEffect(() => {
     const fetchAllMarkets = async () => {
       try {
         const { data } = await axios.get('https://only-backend-je4j.onrender.com/api/markets');
-        setAllMarkets(data);
+        // Sort markets so that open betting markets come first
+        const sortedMarkets = data.sort((a, b) => b.isBettingOpen - a.isBettingOpen);
+        setAllMarkets(sortedMarkets);
       } catch (error) {
         console.error('Error fetching all markets:', error);
       } finally {
@@ -103,7 +102,7 @@ const HomePage = () => {
                 <div className="text-gray-300">
                   <p className="text-xs">Open: {market.openTime} | Close: {market.closeTime}</p>
                   <p className="text-sm mt-1 text-yellow-500 font-bold">
-                    {formatMarketResult(market.results?.["Market Result"])}
+                    {formatMarketResult(market.results)}
                   </p>
                 </div>
                 {market.isBettingOpen && (

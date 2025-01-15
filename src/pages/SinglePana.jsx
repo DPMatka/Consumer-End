@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 
 const SinglePana = () => {
@@ -8,52 +8,46 @@ const SinglePana = () => {
   const [points, setPoints] = useState("");
   const [bets, setBets] = useState([]);
   const [placedBets, setPlacedBets] = useState([]);
-  const [coins, setCoins] = useState();
+  const [coins, setCoins] = useState(0);
   const [error, setError] = useState("");
   const [betType, setBetType] = useState("Open");
+  const location = useLocation();
+  const marketName = location.state?.marketName;
+  console.log(marketName);
 
   useEffect(() => {
-    const fetchWalletBalance = async () => {
+    const fetchWalletBalanceAndBets = async () => {
       const token = localStorage.getItem('token');
       if (!token) {
-        setError("You need to log in to see your balance.");
+        setError("You need to log in to access this information.");
         return;
       }
-      try {
-        const response = await axios.get('https://only-backend-je4j.onrender.com/api/wallet/balance', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-        setCoins(response.data.walletBalance);
-      } catch (error) {
-        console.error('Error fetching wallet balance:', error);
-        setError("Failed to fetch wallet balance!");
-      }
-    };
 
-    const fetchPlacedBets = async () => {
-      const token = localStorage.getItem("token");
       try {
-        const response = await axios.get(
-          "https://only-backend-je4j.onrender.com/api/bets/user/",
-          {
+        const [walletRes, betsRes] = await Promise.all([
+          axios.get('https://only-backend-je4j.onrender.com/api/wallet/balance', {
             headers: {
               Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-          }
-        );
-        setPlacedBets(response.data.bets.filter(bet => bet.gameName === "Single Pana"));
+              'Content-Type': 'application/json'
+            }
+          }),
+          axios.get('https://only-backend-je4j.onrender.com/api/bets/user/', {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          })
+        ]);
+        
+        setCoins(walletRes.data.walletBalance);
+        setPlacedBets(betsRes.data.bets.filter(bet => bet.gameName === "Single Pana" && bet.marketName === marketName));
       } catch (error) {
-        console.error("Error fetching placed bets:", error);
-        setError("Failed to fetch bets!");
+        console.error('Error fetching data:', error);
+        setError("Failed to fetch data!");
       }
     };
 
-    fetchWalletBalance();
-    fetchPlacedBets();
+    fetchWalletBalanceAndBets();
   }, []);
 
   const handleAddBet = () => {
@@ -92,35 +86,34 @@ const SinglePana = () => {
   };
 
   const handlePlaceBet = async () => {
-    const totalPoints = bets.reduce((sum, bet) => sum + parseInt(bet.points, 10), 0);
-  
-    if (totalPoints === 0) {
+    if (!bets.length) {
       setError("No bets to place!");
       return;
     }
-  
+
+    const totalPoints = bets.reduce((sum, bet) => sum + parseInt(bet.points, 10), 0);
     if (coins < totalPoints) {
       setError("Insufficient coins!");
       return;
     }
-  
+
     const token = localStorage.getItem("token");
     if (!token) {
       setError("You need to log in to place bets.");
       return;
     }
-  
+
     try {
       const responses = await Promise.all(
         bets.map(bet =>
           axios.post(
             "https://only-backend-je4j.onrender.com/api/bets/place",
             {
-              marketName: "Milan Day", // Static or dynamic depending on your application logic
-              gameName: "Single Pana", // As defined for the type of game
+              marketName: marketName,
+              gameName: "Single Pana",
               number: bet.input,
               amount: bet.points,
-              winningRatio: 9, // This can be a fixed value or dynamically adjusted based on game logic
+              winningRatio: 9,
               betType: bet.betType,
             },
             {
@@ -132,14 +125,13 @@ const SinglePana = () => {
           )
         )
       );
-  
-      const confirmedBets = responses.map((resp, index) => ({
+
+      // Update placed bets and reset current bets
+      const newPlacedBets = responses.map((resp, index) => ({
         ...bets[index],
-        isPlaced: true,
-        status: resp.data.status || "Pending",
+        status: resp.data.status || "Pending"
       }));
-  
-      setPlacedBets([...placedBets, ...confirmedBets]);
+      setPlacedBets([...placedBets, ...newPlacedBets]);
       setCoins(coins - totalPoints);
       setBets([]);
       setError("");
@@ -148,17 +140,15 @@ const SinglePana = () => {
       console.error("Error placing bets:", error);
       setError("Failed to place bets!");
     }
-  };  
+  };
 
   return (
     <div className="bg-gray-900 text-white min-h-screen p-4">
-      {/* Header */}
       <header className="flex items-center bg-gray-800 p-3 shadow-md mb-4">
         <button
           onClick={() => navigate(-1)}
           className="mr-3 bg-transparent text-white p-1 rounded-full hover:bg-gray-700 transition duration-300"
         >
-          {/* Icon */}
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
           </svg>
@@ -169,7 +159,6 @@ const SinglePana = () => {
         </div>
       </header>
 
-      {/* Bet Type Selector */}
       <div className="flex justify-center mb-4">
         <button onClick={() => setBetType("Open")}
                 className={`px-4 py-1 rounded-l-md font-bold text-sm ${betType === "Open" ? "bg-purple-600 text-white" : "bg-gray-800 text-gray-400"} hover:bg-purple-700 transition duration-300`}>
@@ -181,7 +170,6 @@ const SinglePana = () => {
         </button>
       </div>
 
-      {/* Input for Pana and Points */}
       <div className="grid grid-cols-3 gap-3 mb-4">
         <input
           type="text"
@@ -205,14 +193,12 @@ const SinglePana = () => {
         </button>
       </div>
 
-      {/* Error Message */}
       {error && (
         <div className="bg-red-600 text-white px-3 py-2 rounded-md text-center text-sm mb-4">
           {error}
         </div>
       )}
 
-      {/* Current Bets Table */}
       <div className="bg-gray-800 p-4 rounded-md shadow-md mb-4">
         <h3 className="text-base font-bold mb-3">Current Bets</h3>
         <table className="w-full table-auto text-sm mb-3">
@@ -226,7 +212,8 @@ const SinglePana = () => {
           </thead>
           <tbody>
             {bets.map((bet, index) => (
-              <tr key={bet.betId} className="border-b border-gray-700">
+              // Ensure key is unique, here using `bet.betId` and falling back to index if `betId` is undefined
+              <tr key={bet.betId || index} className="border-b border-gray-700">
                 <td className="px-3 py-2">{bet.input}</td>
                 <td className="px-3 py-2">{bet.points}</td>
                 <td className="px-3 py-2">{bet.betType}</td>
@@ -244,7 +231,6 @@ const SinglePana = () => {
         </table>
       </div>
 
-      {/* Place Bet Button */}
       <button
         onClick={handlePlaceBet}
         className="w-full bg-green-600 hover:bg-green-700 py-2 rounded-md font-bold text-sm transition duration-300 mb-4"
@@ -252,7 +238,6 @@ const SinglePana = () => {
         Place Bet
       </button>
 
-      {/* Placed Bets Table */}
       <div className="bg-gray-800 p-4 rounded-md shadow-md">
         <h3 className="text-base font-bold mb-3">Placed Bets</h3>
         <table className="w-full table-auto text-sm">
@@ -265,17 +250,16 @@ const SinglePana = () => {
             </tr>
           </thead>
           <tbody>
-            {placedBets.map((bet) => (
-              <tr key={bet.betId} className="border-b border-gray-700">
-                <td className="px-3 py-2">{bet.input}</td>
-                <td className="px-3 py-2">{bet.points}</td>
+            {placedBets.map((bet, index) => (
+              // Ensure key is unique
+              <tr key={bet.betId || index} className="border-b border-gray-700">
+                <td className="px-3 py-2">{bet.number}</td>
+                <td className="px-3 py-2">{bet.amount}</td>
                 <td className="px-3 py-2">{bet.betType}</td>
                 <td className="px-3 py-2">
-                  {bet.status === "Win" ? (
-                    <span className="text-green-500 font-bold">Win</span>
-                  ) : (
-                    <span className="text-yellow-500 font-bold">Pending</span>
-                  )}
+                  <span className={`font-bold ${bet.status === "Win" ? "text-green-500" : "text-yellow-500"}`}>
+                    {bet.status}
+                  </span>
                 </td>
               </tr>
             ))}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 
 const DoublePana = () => {
@@ -8,32 +8,46 @@ const DoublePana = () => {
   const [points, setPoints] = useState("");
   const [bets, setBets] = useState([]);
   const [placedBets, setPlacedBets] = useState([]);
-  const [coins, setCoins] = useState(1000);  // Example default value
+  const [coins, setCoins] = useState(1000);
   const [error, setError] = useState("");
   const [betType, setBetType] = useState("Open");
+  const location = useLocation();
+  const marketName = location.state?.marketName
+  console.log(marketName);
 
   useEffect(() => {
-    const fetchWalletBalance = async () => {
+    const fetchBetsAndBalance = async () => {
       const token = localStorage.getItem('token');
       if (!token) {
-        setError("You need to log in to see your balance.");
+        setError("You need to log in to access this information.");
         return;
       }
+
       try {
-        const response = await axios.get('https://only-backend-je4j.onrender.com/api/wallet/balance', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
-        setCoins(response.data.walletBalance);
+        const [walletResponse, betsResponse] = await Promise.all([
+          axios.get('https://only-backend-je4j.onrender.com/api/wallet/balance', {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          }),
+          axios.get('https://only-backend-je4j.onrender.com/api/bets/user/', {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          })
+        ]);
+
+        setCoins(walletResponse.data.walletBalance);
+        setPlacedBets(betsResponse.data.bets.filter(bet => bet.gameName === "Double Pana" && bet.marketName === marketName));
       } catch (error) {
-        console.error('Error fetching wallet balance:', error);
-        setError("Failed to fetch wallet balance!");
+        console.error('Error fetching data:', error);
+        setError("Failed to fetch data!");
       }
     };
 
-    fetchWalletBalance();
+    fetchBetsAndBalance();
   }, []);
 
   const handleAddBet = () => {
@@ -96,7 +110,7 @@ const DoublePana = () => {
           axios.post(
             "https://only-backend-je4j.onrender.com/api/bets/place",
             {
-              marketName: "Milan Day",
+              marketName: marketName,
               gameName: "Double Pana",
               number: bet.input,
               amount: bet.points,
@@ -219,7 +233,8 @@ const DoublePana = () => {
           </thead>
           <tbody>
             {bets.map((bet, index) => (
-              <tr key={bet.betId} className="border-b border-gray-700">
+              // Using betId as key, fallback to index if betId is not available
+              <tr key={bet.betId || `bet-${index}`} className="border-b border-gray-700">
                 <td className="px-2 py-1">{bet.input}</td>
                 <td className="px-2 py-1">{bet.points}</td>
                 <td className="px-2 py-1">{bet.betType}</td>
@@ -258,13 +273,14 @@ const DoublePana = () => {
             </tr>
           </thead>
           <tbody>
-            {placedBets.map((bet) => (
-              <tr key={bet.betId} className="border-b border-gray-700">
-                <td className="px-2 py-1">{bet.input}</td>
-                <td className="px-2 py-1">{bet.points}</td>
+            {placedBets.map((bet, index) => (
+              // Ensuring unique key using betId, with index as a fallback
+              <tr key={bet.betId || `placed-${index}`} className="border-b border-gray-700">
+                <td className="px-2 py-1">{bet.number}</td>
+                <td className="px-2 py-1">{bet.amount}</td>
                 <td className="px-2 py-1">{bet.betType}</td>
                 <td className="px-2 py-1">
-                  {bet.isWin ? (
+                  {bet.status === "Win" ? (
                     <span className="text-green-400 font-bold">Win</span>
                   ) : (
                     <span className="text-yellow-400 font-bold">Pending</span>

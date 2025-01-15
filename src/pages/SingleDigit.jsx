@@ -12,65 +12,62 @@ const SingleDigit = () => {
   const [coins, setCoins] = useState();
   const [error, setError] = useState("");
   const [betType, setBetType] = useState("Open");
-  const marketName = location.state?.marketName || "Milan Day"; // Default to "Milan Day" if marketName is not provided
+  const marketName = location.state?.marketName || "Milan Day"; // Default to "Milan Day" if not provided
   const gameName = "Single Digit";
 
   useEffect(() => {
-    const fetchWalletBalance = async () => {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        setError("You need to log in to see your balance.");
-        return;
-      }
-      try {
-        const response = await axios.get(
-          "https://only-backend-je4j.onrender.com/api/wallet/balance",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        setCoins(response.data.walletBalance);
-      } catch (error) {
-        console.error("Error fetching wallet balance:", error);
-        setError("Failed to fetch wallet balance!");
-      }
-    };
-
     fetchWalletBalance();
+    fetchPlacedBets();
   }, []);
 
-  useEffect(() => {
-    const fetchPlacedBets = async () => {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        setError("You need to log in to see your bets.");
-        return;
-      }
-      try {
-        const response = await axios.get(
-          "https://only-backend-je4j.onrender.com/api/bets/user/",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        const filteredBets = response.data.bets.filter(
-          (bet) => bet.marketName === marketName && bet.gameName === gameName
-        );
-        setPlacedBets(filteredBets);
-      } catch (error) {
-        console.error("Error fetching placed bets:", error);
-        setError("Failed to fetch bets!");
-      }
-    };
+  const fetchWalletBalance = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setError("You need to log in to see your balance.");
+      return;
+    }
+    try {
+      const response = await axios.get(
+        "https://only-backend-je4j.onrender.com/api/wallet/balance",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      setCoins(response.data.walletBalance);
+    } catch (error) {
+      console.error("Error fetching wallet balance:", error);
+      setError("Failed to fetch wallet balance!");
+    }
+  };
 
-    fetchPlacedBets();
-  }, [marketName, gameName]);
+  const fetchPlacedBets = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setError("You need to log in to see your bets.");
+      return;
+    }
+    try {
+      const response = await axios.get(
+        "https://only-backend-je4j.onrender.com/api/bets/user/",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const filteredBets = response.data.bets.filter(
+        (bet) => bet.marketName === marketName && bet.gameName === gameName
+      );
+      setPlacedBets(filteredBets);
+    } catch (error) {
+      console.error("Error fetching placed bets:", error);
+      setError("Failed to fetch bets!");
+    }
+  };
 
   const handleAddBet = () => {
     if (!digit || !points) {
@@ -134,7 +131,7 @@ const SingleDigit = () => {
             number: bet.digit,
             amount: bet.points,
             winningRatio: 9,
-            betType: bet.betType, // Include betType in the request body
+            betType: bet.betType,
           },
           {
             headers: {
@@ -157,6 +154,7 @@ const SingleDigit = () => {
       setCoins(coins - totalPoints);
       setBets([]);
       setError("");
+      fetchPlacedBets(); // Refetch placed bets to update the table
       alert("All bets placed successfully!");
     } catch (error) {
       console.error("Error placing bets:", error);

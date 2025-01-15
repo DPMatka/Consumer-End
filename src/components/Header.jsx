@@ -52,7 +52,7 @@ const Header = () => {
           className="text-2xl font-bold cursor-pointer"
           onClick={() => navigate('/')}
         >
-          DP Matka
+          DP Matka King
         </h1>
       </div>
       <div className="flex items-center space-x-4">

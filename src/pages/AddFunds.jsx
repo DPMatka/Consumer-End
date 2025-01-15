@@ -24,9 +24,7 @@ const AddFunds = () => {
     const formData = new FormData();
     formData.append('transactionId', trimmedTransactionId);
     formData.append('amount', parsedAmount);
-    if (receipt) {
-      formData.append('receipt', receipt);
-    }
+    formData.append('receipt', receipt);
 
     try {
       // API call to submit fund request
