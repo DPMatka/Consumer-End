@@ -50,7 +50,7 @@ const HomePage = () => {
       </div>
 
       {/* Marquee Text */}
-      <marquee className="text-sm font-medium bg-gray-800 py-2">
+      <marquee className="text-sm font-medium bg-gray-800 py-2 invisible">
         100% Genuine! Deposits and Withdrawals are available 24x7
       </marquee>
 
