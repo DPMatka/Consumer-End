@@ -63,7 +63,7 @@ const HomePage = () => {
           📞 Contact Us
         </button>
         <button
-          className="text-sm font-medium py-2 px-4 bg-gradient-to-r from-yellow-500 to-yellow-700 text-white rounded-lg shadow-md hover:from-yellow-600 hover:to-yellow-800 transition-colors duration-300"
+          className="text-sm font-medium py-2 px-4 bg-gradient-to-r from-yellow-500 to-yellow-700 text-white rounded-lg shadow-md hover:from-yellow-600 hover:to-yellow-800 transition-colors duration-300 invisible"
           onClick={() => navigate('/add-funds')}
         >
           + Add Points
